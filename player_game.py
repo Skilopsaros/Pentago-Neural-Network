@@ -30,12 +30,12 @@ def sane_rotational_input(text):
         return(output)
     else:
         print('Please provide a correct input, either C for clockwise or A for anticlockwise. Leters must be capital.')
-        return(sane_rotational_input(text)) 
+        return(sane_rotational_input(text))
 
 while not game_over:
     print()
-    print('turn '+str(game.turn+1))
-    print('Player '+str(game.turn%2+1))
+    print('turn '+str(game.board.turn+1))
+    print('Player '+str(game.board.turn%2+1))
     print('Enter the coordinates of the spot to drop a stone')
     valid_move = 0
     while valid_move == 0:
@@ -53,7 +53,7 @@ while not game_over:
     game.board.show()
     print()
 
-    if (win_state == 0) and (game.turn >= 36):
+    if (win_state == 0) and (game.board.turn >= 36):
         win_state = 3
 
     if win_state != 0:

@@ -30,6 +30,7 @@ class board:
     def __init__(self):
         self.subs = [[sub_board(),sub_board()],[sub_board(),sub_board()]]
         self.contents = np.zeros([6, 6], dtype=int)
+        self.turn = 0
 
     def calculate_contents(self):
         for i in range(6):
@@ -130,18 +131,17 @@ class game:
 
     def __init__(self):
         self.board = board()
-        self.turn = 0
 
     def first_half_round(self,x,y):
         if 0 == self.board.subs[(y-1)//3][(x-1)//3].contents[y-1-3*((y-1)//3)][x-1-3*((x-1)//3)]:
-            self.board.change_board(x,y,(self.turn%2+1))
+            self.board.change_board(x,y,(board.turn%2+1))
             return(1)
         else:
             return(0)
 
     def second_half_round(self,rx,ry,direction):
         self.board.rotate_sub(rx,ry,direction)
-        self.turn += 1
+        self.board.turn += 1
         return(self.board.check_for_win())
 
 #something New
