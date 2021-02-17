@@ -67,5 +67,27 @@ class network:
             return(self.M,self.V)
 
     def calculate_move(self,board):
+        ''' this function will take the board object from board.py, translate it into a valid input for calculate_output,
+         then make the move on the board based on the output'''
+         input = np.zeros(39)# the network will take 39 inputs
+         input[0] = float(board.turn)/36 # the first will be a normalised turn number, how many turns have been played
+         # for the second, we will look at the centre of each board, count the free ones, normalise it and use it as the second input
+         for i in range(2):
+             for j in range(2):
+                 if 0 == board.subs[i][j].contents[1][1]:
+                     input[1] += 0.25
+        input[2] = -2*(board.turn%2)+1 # this will be 1 if the network is player 1 or -1 if it's player 2
+        for i in range(36): # now add the contents of the board into the next 36 inputs
+            number = board.subs[(i//18)%2][(i//3)%2].contents[(i//6)%3][(i%3)]
+            if input[2] == number: # 1 if it is a stone that belongs to the network
+                input[i] = 1
+            elif 0 == number: # 0 of it is empty
+                input[i] = 0
+            else: # -1 if it is a stone that belongs to the enemy
+                input[i] =-1
+
+        # Now that the input is ready, it's time to calculate the outputs
+        outputs = calculate_output(input)
+
 
         pass
