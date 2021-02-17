@@ -143,3 +143,5 @@ class game:
         self.board.rotate_sub(rx,ry,direction)
         self.turn += 1
         return(self.board.check_for_win())
+
+#something New
