@@ -62,10 +62,10 @@ class board:
             else:
                 return(0)
 
-        def check_horisontal(x,y,n):
+        def check_horizontal(x,y,n):
             if (self.contents[y][x] == self.contents[y][x+1]):
                 if n<3:
-                    return(check_horisontal(x+1,y,n+1))
+                    return(check_horizontal(x+1,y,n+1))
                 else:
                     return(self.contents[y][x])
             else:
@@ -95,7 +95,7 @@ class board:
         for i in range(2):
             for j in range(6):
                 if self.contents[j][i] != 0:
-                    win = check_horisontal(i,j,0)
+                    win = check_horizontal(i,j,0)
                     if 1 == win:
                         wins_player_1 += 1
                     elif 2 == win:
