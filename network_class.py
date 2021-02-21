@@ -42,7 +42,7 @@ class network:
             output = (np.dot(self.M[i], output)+self.V[i]) # To go from each layer to the next, multiply by the weights matrix and add the biases vector.
         return(self.hypertan(output)) #retern a normalised output
 
-    def produce_child(self, weight_sigma = 0.1, bias_sigma = 0.1, chance_to_change = 0.5):
+    def produce_child(self, weight_sigma = 0.1, bias_sigma = 0.1, chance_to_change = 0.4):
         ''' This function will return another network object, slightly mutated from the one that run the function'''
         new_Ms = copy.deepcopy(self.M) #the new network's weights are the same as the old one's, but some will change later
         for i in range(len(new_Ms)):
