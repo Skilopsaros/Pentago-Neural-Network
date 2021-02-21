@@ -4,6 +4,7 @@ import numpy as np
 import random
 import copy
 import os
+from progress.bar import Bar
 
 # detect the current working directory
 path = os.getcwd()
@@ -67,10 +68,13 @@ def generate_child_generation(networks_to_reproduce):
 
 def run_generation(networks):
 
-    for i in range(len(networks)):
-        for j in range(len(networks)):
-            if i != j:
-                network_game(networks[i],networks[j])
+    print('Generation started')
+    with Bar('Playing games', max=380, fill='█',empty_fill = '∙') as bar:
+        for i in range(len(networks)):
+            for j in range(len(networks)):
+                if i != j:
+                    network_game(networks[i],networks[j])
+                    bar.next()
 
     def find_best_network(networks):
         best = networks[0]
@@ -88,5 +92,65 @@ def run_generation(networks):
     print('second winner score:')
     print(second_winner.score)
 
+    return(first_winner,second_winner)
 
-run_generation(generate_random_generation())
+
+def weights_to_string(Ms,Vs):
+    M_string_list_1 = []
+    for i in range(len(Ms)):
+        M_string_list_2 = []
+        for j in range(len(Ms[i])):
+            M_string_list_3 = []
+            for k in range(len(Ms[i][j])):
+                M_string_list_3.append(str(Ms[i][j][k]))
+            M_string_list_2.append(",".join(M_string_list_3))
+        M_string_list_1.append(";".join(M_string_list_2))
+    M_string = ":".join(M_string_list_1)
+
+    V_string_list_1 = []
+    for i in range(len(Vs)):
+        V_string_list_2 = []
+        for j in range(len(Vs[i])):
+            V_string_list_2.append(str(Vs[i][j]))
+        V_string_list_1.append(",".join(V_string_list_2))
+    V_string = ";".join(V_string_list_1)
+
+    output_string = '#'.join([M_string, V_string])
+    return(output_string)
+
+def strings_to_weights(one_string):
+    two_strings = one_string.split('#')
+    Ms = []
+    Ms_lists = []
+    Ms_split_strings_1 = two_strings[0].split(":")
+    Ms_split_strings_2 = []
+    Ms_split_strings_3 = []
+    for i in range(len(Ms_split_strings_1)):
+        Ms_split_strings_2.append(Ms_split_strings_1[i].split(';'))
+        Ms_split_strings_3.append([])
+        Ms_lists.append([])
+    for i in range(len(Ms_split_strings_2)):
+        for j in range(len(Ms_split_strings_2[i])):
+            Ms_split_strings_3[i].append(Ms_split_strings_2[i][j].split(','))
+            Ms_lists[i].append([])
+
+    for i in range(len(Ms_split_strings_3)):
+        for j in range(len(Ms_split_strings_3[i])):
+            for k in range(len(Ms_split_strings_3[i][j])):
+                Ms_lists[i][j].append(float(Ms_split_strings_3[i][j][k]))
+        Ms.append(np.array(Ms_lists[i]))
+
+    Vs = []
+    Vs_lists = []
+    Vs_split_strings_1 = two_strings[1].split(';')
+    Vs_split_strings_2 = []
+    for i in range(len(Vs_split_strings_1)):
+        Vs_split_strings_2.append(Vs_split_strings_1[i].split(','))
+        Vs_lists.append([])
+
+    for i in range(len(Vs_split_strings_2)):
+        for j in range(len(Vs_split_strings_2[i])):
+            Vs_lists[i].append(float(Vs_split_strings_2[i][j]))
+        Vs.append(np.array(Vs_lists[i]))
+
+    return(Ms,Vs)
