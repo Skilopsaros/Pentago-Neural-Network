@@ -9,6 +9,7 @@ from progress.bar import Bar
 # detect the current working directory
 path = os.getcwd()
 
+
 def network_game(player_1,player_2):
     game_board = board.game()
     game_won = 0
@@ -57,7 +58,8 @@ def generate_random_generation(size=20):
 def generate_child_generation(networks_to_reproduce):
     new_networks = []
     for i in networks_to_reproduce:
-        new_networks.append(nw.network(i.get_weights()))
+        new_Ms,new_Vs = i.get_weights()
+        new_networks.append(nw.network(new_Ms,new_Vs))
         for j in range(2):
             new_networks.append(i.produce_child())
             new_networks.append(i.produce_child(weight_sigma = 0.2, bias_sigma = 0.2, chance_to_change = 0.6))
@@ -94,31 +96,7 @@ def run_generation(networks):
 
     return(first_winner,second_winner)
 
-
-def weights_to_string(Ms,Vs):
-    M_string_list_1 = []
-    for i in range(len(Ms)):
-        M_string_list_2 = []
-        for j in range(len(Ms[i])):
-            M_string_list_3 = []
-            for k in range(len(Ms[i][j])):
-                M_string_list_3.append(str(Ms[i][j][k]))
-            M_string_list_2.append(",".join(M_string_list_3))
-        M_string_list_1.append(";".join(M_string_list_2))
-    M_string = ":".join(M_string_list_1)
-
-    V_string_list_1 = []
-    for i in range(len(Vs)):
-        V_string_list_2 = []
-        for j in range(len(Vs[i])):
-            V_string_list_2.append(str(Vs[i][j]))
-        V_string_list_1.append(",".join(V_string_list_2))
-    V_string = ";".join(V_string_list_1)
-
-    output_string = '#'.join([M_string, V_string])
-    return(output_string)
-
-def strings_to_weights(one_string):
+def strings_to_networks(one_string):
     two_strings = one_string.split('#')
     Ms = []
     Ms_lists = []
@@ -153,4 +131,44 @@ def strings_to_weights(one_string):
             Vs_lists[i].append(float(Vs_split_strings_2[i][j]))
         Vs.append(np.array(Vs_lists[i]))
 
-    return(Ms,Vs)
+    return(nw.network(Ms,Vs))
+
+def train_networks(state = 'new', first_parrent = 0, second_parrent = 0, gen = 0): #state takes 'new' to generate new ones, 'file' to read latest from file, or 'cont' and two networks to use two existing ones
+
+    if 'new' == state:
+        networks = generate_random_generation()
+    elif 'cont' == state:
+        networks = generate_child_generation([first_parrent, second_parrent])
+    elif 'file' == state:
+        files = os.listdir(path+'/training')
+        largest_gen = 0
+        for i in files:
+            if int(i.split('#')[1].split('.')[0])>largest_gen:
+                largest_gen = int(i.split('#')[1].split('.')[0])
+        gen = largest_gen
+        file = open('training/child_1_gen #'+str(gen)+'.txt', 'r')
+        first_network_string = file.read()
+        file.close()
+        file = open('training/child_2_gen #'+str(gen)+'.txt', 'r')
+        second_network_string = file.read()
+        file.close()
+
+        networks = generate_child_generation([strings_to_networks(first_network_string), strings_to_networks(second_network_string)])
+
+    gen += 1
+    for i in range(99):
+        print()
+        print('Generation '+str(gen))
+        first_winner, second_winner = run_generation(networks)
+        networks = generate_child_generation([first_winner, second_winner])
+        gen += 1
+    first_winner, second_winner = run_generation(networks)
+
+    with open('training/child_1_gen #'+str(gen)+'.txt', 'w') as f:
+        f.write(first_winner.weights_to_string())
+    with open('training/child_2_gen #'+str(gen)+'.txt', 'w') as f:
+        f.write(second_winner.weights_to_string())
+
+    train_networks(state = 'cont', first_parrent = first_winner, second_parrent = second_winner, gen = gen)
+
+train_networks(state = 'file')

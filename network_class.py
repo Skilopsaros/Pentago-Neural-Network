@@ -126,3 +126,26 @@ class network:
         #print(self.score)
         # thankfully, there are no invalid possible moves for the second move.
         return(game.second_half_round(move_rx,move_ry,move_r)) #returns the win state of the game
+
+    def weights_to_string(self):
+        M_string_list_1 = []
+        for i in range(len(self.M)):
+            M_string_list_2 = []
+            for j in range(len(self.M[i])):
+                M_string_list_3 = []
+                for k in range(len(self.M[i][j])):
+                    M_string_list_3.append(str(self.M[i][j][k]))
+                M_string_list_2.append(",".join(M_string_list_3))
+            M_string_list_1.append(";".join(M_string_list_2))
+        M_string = ":".join(M_string_list_1)
+
+        V_string_list_1 = []
+        for i in range(len(self.V)):
+            V_string_list_2 = []
+            for j in range(len(self.V[i])):
+                V_string_list_2.append(str(self.V[i][j]))
+            V_string_list_1.append(",".join(V_string_list_2))
+        V_string = ";".join(V_string_list_1)
+
+        output_string = '#'.join([M_string, V_string])
+        return(output_string)
