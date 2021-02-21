@@ -53,6 +53,8 @@ class board:
 
     def check_for_win(self):
         '''checks the board for a win state. Returns 1 if player 1 won, 2 if player 2 won, 3 if it is a tie, and 0 otherwise'''
+        if self.turn == 36:
+            return(3)
         def check_vertical(x,y,n):
             if (self.contents[y][x] == self.contents[y+1][x]):
                 if n<3:
@@ -134,7 +136,7 @@ class game:
 
     def first_half_round(self,x,y):
         if 0 == self.board.subs[(y-1)//3][(x-1)//3].contents[y-1-3*((y-1)//3)][x-1-3*((x-1)//3)]:
-            self.board.change_board(x,y,(board.turn%2+1))
+            self.board.change_board(x,y,(self.board.turn%2+1))
             return(1)
         else:
             return(0)
