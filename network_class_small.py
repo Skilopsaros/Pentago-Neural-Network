@@ -90,45 +90,39 @@ class network:
         outputs = self.calculate_output(input)
         # Now to convert the outputs into a valid move
         #print(outputs)
-        best_move_output = -2
-        move_to_play = 0
-        outputs_range = [*range(36)]
-        for i in outputs_range:
-            if outputs[i] > best_move_output:
-                best_move_output = outputs[i]
-                move_to_play = i
-        del outputs_range[move_to_play]
-        move_x = (move_to_play%6)+1
-        move_y = (move_to_play//6)+1
-
-        best_rotation_output = -2
-        rotation_to_play = 0
-        for i in range(4):
-            if outputs[i+36] > best_rotation_output:
-                rotation_to_play = i
-        move_rx = rotation_to_play%2
-        move_ry = rotation_to_play//2
-
-        move_r = 'C'
-        if outputs[40]>outputs[41]:
+        move_x = int(outputs[0]*3+4) # the x component of the move, take the -1 to 1 range, and convert it into an int between 1 and 6
+        if 7 == move_x: #edge case when outputs[0]=1.0
+            move_x=6 # the y component of the move, take the -1 to 1 range, and convert it into an int between 1 and 6
+        #print('move x is '+str(move_x))
+        move_y = int(outputs[1]*3+4)
+        if 7 == move_y: #edge case when outputs[1]=1.0
+            move_y=6
+        #print('move y is '+str(move_y))
+        if outputs[2]>0: # the rotational direction component of the move, if positive do clockwise, otherwise anticlockwise
+            move_r = 'C'
+        else:
             move_r = 'A'
-
+        #print('move r is '+move_r)
+        if outputs[3]>0:# the x component of which sub-board to rotate, positive for 2, negative for 1
+            move_rx = 1
+        else:
+            move_rx = 0
+        #print('move rx is '+str(move_rx))
+        if outputs[4]>0:# the y component of which sub-board to rotate, positive for 2, negative for 1
+            move_ry = 1
+        else:
+            move_ry = 0
+        #print('move rx is '+str(move_ry))
         # Now to atempt to make a move
         #first we try the stone placement. if the move is invalid, then place randomly
+        random_move_pool = [1,2,3,4,5,6]
         failed = 0
         while 0 == game.first_half_round(move_x,move_y): # Each time the code will atempt to change the board. if the move is valid, it will skip the loop.
-            failed += -1 # recording that it failed at least once
-            best_move_output = -2
-            move_to_play = 0
-            for i in outputs_range:
-                if outputs[i] > best_move_output:
-                    best_move_output = outputs[i]
-                    move_to_play = i
-            outputs_range.remove(move_to_play)
-            move_x = (move_to_play%6)+1
-            move_y = (move_to_play//6)+1
-
-        self.score += failed #punishing the netwoork for bad play
+            failed = 1 # recording that it failed at least once
+            #print('random move')
+            move_x = random.choice(random_move_pool) # if the move is not valid it will try to get new x and y values
+            move_y = random.choice(random_move_pool) # and by checking if these are valid, every time it will atempt to change the board
+        self.score += (-30)*failed #punishing the netwoork for bad play
         #print(self.score)
         # thankfully, there are no invalid possible moves for the second move.
         return(game.second_half_round(move_rx,move_ry,move_r)) #returns the win state of the game

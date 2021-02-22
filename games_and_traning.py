@@ -32,7 +32,7 @@ def network_game(player_1,player_2):
     #print(player_1.score)
     #print(player_2.score)
 
-def generate_random_network(dimensions = [39,31,31,5]):
+def generate_random_network(dimensions = [39,45,43,42]):
 
     Ms=[0,0,0]
     for i in range(3):
@@ -154,13 +154,13 @@ def train_networks(state = 'new', parents = [], gen = 0, number_in_generation = 
         file.close()
 
         parent_strings = one_parent_string.split('@')
-        for i in range(parent_strings):
+        for i in range(len(parent_strings)):
             parents.append(strings_to_networks(parent_strings[i]))
 
         networks = generate_child_generation(parents, number_in_generation=number_in_generation)
 
     gen += 1
-    for i in range(49):
+    for i in range(5):
         print()
         print('Generation '+str(gen))
         winners = run_generation(networks, number_to_win = number_of_winners)
