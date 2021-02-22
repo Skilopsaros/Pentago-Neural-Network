@@ -55,23 +55,26 @@ def generate_random_generation(size=20):
         networks.append(generate_random_network())
     return(networks)
 
-def generate_child_generation(networks_to_reproduce):
+def generate_child_generation(networks_to_reproduce, number_in_generation = 20):
     new_networks = []
+    number_to_create = number_in_generation-len(networks_to_reproduce)
+    number_of_childeren = (number_to_create//(4*len(networks_to_reproduce)))
+    number_of_randoms = number_to_create - (number_of_childeren*3*len(networks_to_reproduce))
     for i in networks_to_reproduce:
         new_Ms,new_Vs = i.get_weights()
         new_networks.append(nw.network(new_Ms,new_Vs))
-        for j in range(2):
+        for j in range(number_of_childeren):
             new_networks.append(i.produce_child())
             new_networks.append(i.produce_child(weight_sigma = 0.2, bias_sigma = 0.2, chance_to_change = 0.6))
-            new_networks.append(i.produce_child(weight_sigma = 0.3, bias_sigma = 0.3, chance_to_change = 0.8))
-    for i in range(6):
+            new_networks.append(i.produce_child(weight_sigma = 0.4, bias_sigma = 0.4, chance_to_change = 0.8))
+    for i in range(number_of_randoms):
         new_networks.append(generate_random_network())
     return(new_networks)
 
-def run_generation(networks):
+def run_generation(networks, number_to_win = 2):
 
     print('Generation started')
-    with Bar('Playing games', max=380, fill='█',empty_fill = '∙') as bar:
+    with Bar('Playing games', max=len(networks)*(len(networks)-1), fill='█',empty_fill = '∙') as bar:
         for i in range(len(networks)):
             for j in range(len(networks)):
                 if i != j:
@@ -87,14 +90,14 @@ def run_generation(networks):
                 best_index = i
         return(best_index)
 
-    first_winner  = networks.pop(find_best_network(networks))
+    winners = []
+    winners.append(networks.pop(find_best_network(networks)))
     print('first winner score:')
-    print(first_winner.score)
-    second_winner = networks.pop(find_best_network(networks))
-    print('second winner score:')
-    print(second_winner.score)
+    print(winners[0].score)
+    for i in range(number_to_win-1):
+        winners.append(networks.pop(find_best_network(networks)))
 
-    return(first_winner,second_winner)
+    return(winners)
 
 def strings_to_networks(one_string):
     two_strings = one_string.split('#')
@@ -133,12 +136,12 @@ def strings_to_networks(one_string):
 
     return(nw.network(Ms,Vs))
 
-def train_networks(state = 'new', first_parrent = 0, second_parrent = 0, gen = 0): #state takes 'new' to generate new ones, 'file' to read latest from file, or 'cont' and two networks to use two existing ones
+def train_networks(state = 'new', parents = [], gen = 0, number_in_generation = 20, number_of_winners = 2): #state takes 'new' to generate new ones, 'file' to read latest from file, or 'cont' and two networks to use two existing ones
 
     if 'new' == state:
-        networks = generate_random_generation()
+        networks = generate_random_generation(size=number_in_generation)
     elif 'cont' == state:
-        networks = generate_child_generation([first_parrent, second_parrent])
+        networks = generate_child_generation(parents, number_in_generation=number_in_generation)
     elif 'file' == state:
         files = os.listdir(path+'/training')
         largest_gen = 0
@@ -146,29 +149,35 @@ def train_networks(state = 'new', first_parrent = 0, second_parrent = 0, gen = 0
             if int(i.split('#')[1].split('.')[0])>largest_gen:
                 largest_gen = int(i.split('#')[1].split('.')[0])
         gen = largest_gen
-        file = open('training/child_1_gen #'+str(gen)+'.txt', 'r')
-        first_network_string = file.read()
-        file.close()
-        file = open('training/child_2_gen #'+str(gen)+'.txt', 'r')
-        second_network_string = file.read()
+        file = open('training/Generation #'+str(gen)+'.txt', 'r')
+        one_parent_string = file.read()
         file.close()
 
-        networks = generate_child_generation([strings_to_networks(first_network_string), strings_to_networks(second_network_string)])
+        parent_strings = one_parent_string.split('@')
+        for i in range(parent_strings):
+            parents.append(strings_to_networks(parent_strings[i]))
+
+        networks = generate_child_generation(parents, number_in_generation=number_in_generation)
 
     gen += 1
-    for i in range(99):
+    for i in range(49):
         print()
         print('Generation '+str(gen))
-        first_winner, second_winner = run_generation(networks)
-        networks = generate_child_generation([first_winner, second_winner])
+        winners = run_generation(networks, number_to_win = number_of_winners)
+        print(len(winners))
+        networks = generate_child_generation(winners, number_in_generation=number_in_generation)
         gen += 1
-    first_winner, second_winner = run_generation(networks)
+    print()
+    print('Generation '+str(gen))
+    winners = run_generation(networks, number_to_win = number_of_winners)
+    winner_strings = []
+    for i in range(len(winners)):
+        winner_strings.append(winners[i].weights_to_string())
+    generation_string = '@'.join(winner_strings)
+    with open('training/Generation #'+str(gen)+'.txt', 'w') as f:
+        f.write(generation_string)
 
-    with open('training/child_1_gen #'+str(gen)+'.txt', 'w') as f:
-        f.write(first_winner.weights_to_string())
-    with open('training/child_2_gen #'+str(gen)+'.txt', 'w') as f:
-        f.write(second_winner.weights_to_string())
 
-    train_networks(state = 'cont', first_parrent = first_winner, second_parrent = second_winner, gen = gen)
+    train_networks(state = 'cont', parents = winners, gen = gen, number_in_generation = number_in_generation, number_of_winners = number_of_winners)
 
-train_networks(state = 'file')
+train_networks(state = 'new', number_in_generation = 100, number_of_winners = 15)
