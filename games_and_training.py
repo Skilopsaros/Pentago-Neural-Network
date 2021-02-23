@@ -180,4 +180,4 @@ def train_networks(state = 'new', parents = [], gen = 0, number_in_generation = 
 
     train_networks(state = 'cont', parents = winners, gen = gen, number_in_generation = number_in_generation, number_of_winners = number_of_winners)
 
-train_networks(state = 'file', number_in_generation = 100, number_of_winners = 15)
+#train_networks(state = 'file', number_in_generation = 100, number_of_winners = 15)
