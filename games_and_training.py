@@ -58,7 +58,7 @@ def generate_random_generation(size=20):
 def generate_child_generation(networks_to_reproduce, number_in_generation = 20):
     new_networks = []
     number_to_create = number_in_generation-len(networks_to_reproduce)
-    number_of_childeren = (number_to_create//(4*len(networks_to_reproduce)))
+    number_of_childeren = (number_to_create//(5*len(networks_to_reproduce)))
     number_of_randoms = number_to_create - (number_of_childeren*3*len(networks_to_reproduce))
     for i in networks_to_reproduce:
         new_Ms,new_Vs = i.get_weights()
@@ -66,7 +66,8 @@ def generate_child_generation(networks_to_reproduce, number_in_generation = 20):
         for j in range(number_of_childeren):
             new_networks.append(i.produce_child())
             new_networks.append(i.produce_child(weight_sigma = 0.2, bias_sigma = 0.2, chance_to_change = 0.6))
-            new_networks.append(i.produce_child(weight_sigma = 0.4, bias_sigma = 0.4, chance_to_change = 0.8))
+            new_networks.append(i.produce_child(weight_sigma = 0.5, bias_sigma = 0.5, chance_to_change = 0.8))
+            new_networks.append(i.produce_child(weight_sigma = 1.0, bias_sigma = 1.0, chance_to_change = 0.9))
     for i in range(number_of_randoms):
         new_networks.append(generate_random_network())
     return(new_networks)
@@ -158,9 +159,20 @@ def train_networks(state = 'new', parents = [], gen = 0, number_in_generation = 
             parents.append(strings_to_networks(parent_strings[i]))
 
         networks = generate_child_generation(parents, number_in_generation=number_in_generation)
+    elif 'comb' == state:
+        files = os.listdir(path+'/training')
+        parents = []
+        for i in files:
+            file = open('training/'+i, 'r')
+            parent_strings = file.read().split('@')
+            for j in range(len(parent_strings)):
+                parents.append(strings_to_networks(parent_strings[j]))
+            file.close()
+        networks = generate_child_generation(parents, number_in_generation=number_in_generation)
+
 
     gen += 1
-    for i in range(5):
+    for i in range(4):
         print()
         print('Generation '+str(gen))
         winners = run_generation(networks, number_to_win = number_of_winners)
@@ -180,4 +192,4 @@ def train_networks(state = 'new', parents = [], gen = 0, number_in_generation = 
 
     train_networks(state = 'cont', parents = winners, gen = gen, number_in_generation = number_in_generation, number_of_winners = number_of_winners)
 
-#train_networks(state = 'file', number_in_generation = 100, number_of_winners = 15)
+train_networks(state = 'comb', number_in_generation = 200, number_of_winners = 30)
