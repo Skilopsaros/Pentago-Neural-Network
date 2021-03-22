@@ -30,6 +30,7 @@ class board:
     def __init__(self):
         self.subs = [[sub_board(),sub_board()],[sub_board(),sub_board()]]
         self.contents = np.zeros([6, 6], dtype=int)
+        self.turn = 0
 
     def calculate_contents(self):
         for i in range(6):
@@ -52,6 +53,8 @@ class board:
 
     def check_for_win(self):
         '''checks the board for a win state. Returns 1 if player 1 won, 2 if player 2 won, 3 if it is a tie, and 0 otherwise'''
+        if self.turn == 36:
+            return(3)
         def check_vertical(x,y,n):
             if (self.contents[y][x] == self.contents[y+1][x]):
                 if n<3:
@@ -61,10 +64,10 @@ class board:
             else:
                 return(0)
 
-        def check_horisontal(x,y,n):
+        def check_horizontal(x,y,n):
             if (self.contents[y][x] == self.contents[y][x+1]):
                 if n<3:
-                    return(check_horisontal(x+1,y,n+1))
+                    return(check_horizontal(x+1,y,n+1))
                 else:
                     return(self.contents[y][x])
             else:
@@ -94,7 +97,7 @@ class board:
         for i in range(2):
             for j in range(6):
                 if self.contents[j][i] != 0:
-                    win = check_horisontal(i,j,0)
+                    win = check_horizontal(i,j,0)
                     if 1 == win:
                         wins_player_1 += 1
                     elif 2 == win:
@@ -130,16 +133,17 @@ class game:
 
     def __init__(self):
         self.board = board()
-        self.turn = 0
 
     def first_half_round(self,x,y):
         if 0 == self.board.subs[(y-1)//3][(x-1)//3].contents[y-1-3*((y-1)//3)][x-1-3*((x-1)//3)]:
-            self.board.change_board(x,y,(self.turn%2+1))
+            self.board.change_board(x,y,(self.board.turn%2+1))
             return(1)
         else:
             return(0)
 
     def second_half_round(self,rx,ry,direction):
         self.board.rotate_sub(rx,ry,direction)
-        self.turn += 1
+        self.board.turn += 1
         return(self.board.check_for_win())
+
+#something New
